@@ -1,0 +1,96 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Pretendard", ui-sans-serif, system-ui, sans-serif;
+  --color-y2k-pink: #ff00ff;
+  --color-y2k-blue: #00ffff;
+  --color-y2k-green: #00ff00;
+  --color-y2k-silver: #c0c0c0;
+  
+  @keyframes holo {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+}
+
+@layer utilities {
+  .holo-bg {
+    background: linear-gradient(
+      45deg,
+      #ffdeff,
+      #e1fffd,
+      #d9e4ff,
+      #ffd9fb
+    );
+    background-size: 400% 400%;
+    animation: holo 10s ease infinite;
+  }
+
+  .checkered {
+    background-image: 
+      linear-gradient(45deg, #000 25%, transparent 25%), 
+      linear-gradient(-45deg, #000 25%, transparent 25%), 
+      linear-gradient(45deg, transparent 75%, #000 75%), 
+      linear-gradient(-45deg, transparent 75%, #000 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+  }
+
+  .glass-holo {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(0, 255, 255, 0.2) 25%,
+      rgba(255, 0, 255, 0.2) 50%,
+      rgba(0, 255, 0, 0.2) 75%,
+      rgba(255, 255, 255, 0.4) 100%
+    );
+    background-size: 400% 400%;
+    animation: holo 10s ease infinite;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .sticker-border {
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+  }
+
+  .sticker-card {
+    border: 3px solid #000;
+    border-radius: 40px;
+    box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+    background: white;
+  }
+
+  .bevel-out {
+    box-shadow: inset 2px 2px 0px #ffffff, inset -2px -2px 0px #666666;
+    border: 1px solid #000;
+    background: #c0c0c0;
+  }
+
+  .bevel-in {
+    box-shadow: inset -2px -2px 0px #ffffff, inset 2px 2px 0px #666666;
+    border: 1px solid #000;
+  }
+
+  .star-shape {
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  }
+}
+
+body {
+  font-family: var(--font-sans);
+  background: linear-gradient(
+    45deg,
+    #ffdeff,
+    #e1fffd,
+    #d9e4ff,
+    #ffd9fb
+  );
+  background-size: 400% 400%;
+  animation: holo 10s ease infinite;
+  @apply text-gray-900 min-h-screen relative;
+}
