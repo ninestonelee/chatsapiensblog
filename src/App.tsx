@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { 
   Star, 
   Sparkles, 
@@ -17,6 +17,34 @@ import {
   Share2
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { POSTS, CATEGORIES, getPost, type Post } from "./lib/posts";
+import PostView from "./components/PostView";
+
+// --- Routing (hash based: #/post/<slug>) ---
+
+const readRoute = () => {
+  const m = window.location.hash.match(/^#\/post\/(.+)$/);
+  return m ? decodeURIComponent(m[1]) : null;
+};
+
+const useRoute = () => {
+  const [slug, setSlug] = useState<string | null>(readRoute);
+  useEffect(() => {
+    const onHash = () => setSlug(readRoute());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  return slug;
+};
+
+const openPost = (slug: string) => {
+  window.location.hash = `#/post/${encodeURIComponent(slug)}`;
+};
+
+const goHome = () => {
+  if (window.location.hash) window.location.hash = "";
+  window.scrollTo({ top: 0 });
+};
 
 // --- Components ---
 
@@ -41,36 +69,32 @@ const FloatingStar = ({ delay = 0, x = "50%", y = "50%", size = 20 }) => (
   </motion.div>
 );
 
-interface Post {
-  id: string;
-  title: string;
-  excerpt: string;
-  category: string;
-  date: string;
-}
-
 const StickerCard = ({ post }: { post: Post; key?: React.Key }) => {
-  const rotation = Math.random() * 4 - 2;
+  const rotation = useMemo(() => Math.random() * 4 - 2, []);
+  const readable = post.body !== undefined;
   return (
     <motion.div
       whileHover={{ scale: 1.02, rotate: 0 }}
       transition={{ type: "spring", stiffness: 300 }}
-      className="relative group h-full"
+      className={`relative group h-full ${readable ? "cursor-pointer" : ""}`}
       style={{ rotate: `${rotation}deg` }}
+      onClick={() => readable && openPost(post.slug)}
     >
       <div className="h-full sticker-card p-6 overflow-hidden flex flex-col group-hover:bg-white/95 transition-colors">
         <div className="relative aspect-[4/3] overflow-hidden mb-3">
           <img
-            src={`https://picsum.photos/seed/${post.id}/800/600`}
+            src={post.cover || `https://picsum.photos/seed/${post.id}/800/600`}
             alt={post.title}
             className="w-full h-full object-cover transition-transform group-hover:scale-110"
             referrerPolicy="no-referrer"
           />
-          <div className="absolute top-2 right-2 flex gap-1">
-             <div className="bg-pink-400 text-white text-[10px] px-3 py-1 uppercase font-black border-2 border-black rounded-full rotate-3 shadow-[4px_4px_0px_rgba(0,0,0,0.2)]">
-               NEW!
-             </div>
-          </div>
+          {readable && (
+            <div className="absolute top-2 right-2 flex gap-1">
+               <div className="bg-pink-400 text-white text-[10px] px-3 py-1 uppercase font-black border-2 border-black rounded-full rotate-3 shadow-[4px_4px_0px_rgba(0,0,0,0.2)]">
+                 NEW!
+               </div>
+            </div>
+          )}
         </div>
         <div className="flex-1 flex flex-col">
           <div className="flex items-center gap-2 mb-2">
@@ -81,16 +105,20 @@ const StickerCard = ({ post }: { post: Post; key?: React.Key }) => {
               {post.date}
             </span>
           </div>
-          <h3 className="text-xl font-bold leading-tight mb-2 group-hover:text-y2k-pink transition-colors text-gray-900">
+          <h3 className="text-xl font-bold leading-tight mb-2 group-hover:text-y2k-pink transition-colors text-gray-900 break-keep">
             {post.title}
           </h3>
           <p className="text-sm text-gray-600 mb-4 line-clamp-2">
             {post.excerpt}
           </p>
           <div className="mt-auto pt-4 border-t border-dashed border-gray-200 flex items-center justify-between font-sans">
-            <button className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider hover:text-y2k-pink transition-colors">
-              Read More <ArrowRight size={14} />
-            </button>
+            {readable ? (
+              <button className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider hover:text-y2k-pink transition-colors">
+                Read More <ArrowRight size={14} />
+              </button>
+            ) : (
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-400">준비 중</span>
+            )}
             <div className="flex gap-3 text-gray-400">
                <Heart size={16} className="hover:text-red-500 cursor-pointer transition-colors" />
                <MessageCircle size={16} className="hover:text-y2k-blue cursor-pointer transition-colors" />
@@ -128,57 +156,14 @@ const BevelButton = ({ children, active = false, onClick, className = "" }: Beve
   </button>
 );
 
-// --- Data ---
-
-const POSTS = [
-  {
-    id: "1",
-    title: "The Ultimate Guide to Holo-Tech Aesthetics",
-    excerpt: "Dive into the iridescent world of holographic design and why it's dominating the 2026 digital landscape.",
-    category: "Design",
-    date: "2026.05.02",
-  },
-  {
-    id: "2",
-    title: "Why Cyber-Punk and Y2K are One and the Same",
-    excerpt: "Exploring the intersections of 90s optimistic futurism and the gritty reality of tomorrow.",
-    category: "Culture",
-    date: "2026.04.28",
-  },
-  {
-    id: "3",
-    title: "Retro-Future Coding: Building with Nostalgia",
-    excerpt: "How to implement classic web patterns in modern React architectures without sacrificing performance.",
-    category: "Tech",
-    date: "2026.04.15",
-  },
-  {
-    id: "4",
-    title: "Pixel Perfect: The Return of Dot Matrix UI",
-    excerpt: "Screens are sharper than ever, so why are we craving the low-res look of 1999?",
-    category: "Trends",
-    date: "2026.04.05",
-  },
-  {
-    id: "5",
-    title: "Synthwave Beats for the Modern Office",
-    excerpt: "Our curated playlist for maximum productivity and retro vibes in your digital workspace.",
-    category: "Lifestyle",
-    date: "2026.03.22",
-  },
-  {
-    id: "6",
-    title: "Virtual Reality in the Age of Discovery",
-    excerpt: "Predicting the next decade of immersive storytelling through the lens of early internet wonder.",
-    category: "Discovery",
-    date: "2026.03.10",
-  },
-];
-
 export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("Home");
   const [scrolled, setScrolled] = useState(false);
+  const [category, setCategory] = useState("All");
+  const routeSlug = useRoute();
+  const currentPost = routeSlug ? getPost(routeSlug) : undefined;
+  const visiblePosts = category === "All" ? POSTS : POSTS.filter((p) => p.category === category);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -194,14 +179,14 @@ export default function App() {
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? "py-2" : "py-4"}`}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="glass-holo p-2 sticker-border flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <button onClick={goHome} className="flex items-center gap-3">
               <div className="bg-blue-600 w-12 h-12 flex items-center justify-center border-2 border-black rotate-[-10deg] shadow-[4px_4px_0px_rgba(0,0,0,1)]">
                  <span className="text-white font-black text-xl italic uppercase tracking-tighter">Y2K</span>
               </div>
               <h1 className="text-xl font-black uppercase tracking-tightest hidden sm:block text-blue-600 italic">
-                채사피엔스 <span className="text-black">블로그</span>
+                챗사피엔스 <span className="text-black">블로그</span>
               </h1>
-            </div>
+            </button>
 
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-2">
@@ -263,6 +248,10 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {currentPost ? (
+        <PostView post={currentPost} onBack={goHome} />
+      ) : (
+      <>
       {/* Hero Section */}
       <header className="pt-32 pb-16 px-4">
         <div className="max-w-7xl mx-auto">
@@ -308,8 +297,8 @@ export default function App() {
         {/* Categories Bar */}
         <div className="mb-12 flex flex-wrap gap-2 items-center">
            <span className="text-xs font-bold uppercase mr-4 px-2 py-1 bg-black text-white">Filter By:</span>
-           {["All", "Design", "Culture", "Tech", "Trends", "Lifestyle"].map(cat => (
-             <BevelButton key={cat} active={cat === "All"} className="px-3 py-1">
+           {CATEGORIES.map(cat => (
+             <BevelButton key={cat} active={cat === category} onClick={() => setCategory(cat)} className="px-3 py-1">
                {cat}
              </BevelButton>
            ))}
@@ -319,7 +308,7 @@ export default function App() {
           <div className="md:col-span-12 lg:col-span-8">
             {/* Post Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {POSTS.map((post) => (
+              {visiblePosts.map((post) => (
                 <StickerCard key={post.id} post={post} />
               ))}
             </div>
@@ -391,6 +380,8 @@ export default function App() {
            </button>
         </div>
       </main>
+      </>
+      )}
 
       {/* Footer */}
       <footer className="bg-y2k-silver border-t-8 border-white p-12">
