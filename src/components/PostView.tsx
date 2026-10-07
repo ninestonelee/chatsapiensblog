@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import { motion } from "motion/react";
-import type { Post } from "../lib/posts";
+import { withBase, type Post } from "../lib/posts";
 
 interface PostViewProps {
   post: Post;
@@ -65,7 +65,7 @@ export default function PostView({ post, onBack }: PostViewProps) {
             remarkPlugins={[remarkGfm]}
             components={{
               a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
-              img: ({ node, ...props }) => <img {...props} loading="lazy" />,
+              img: ({ node, src, ...props }) => <img {...props} src={withBase(src as string)} loading="lazy" />,
               table: ({ node, ...props }) => (
                 <div className="table-wrap">
                   <table {...props} />

@@ -23,6 +23,12 @@ export interface Post {
   body?: string; // markdown; undefined = placeholder post without a detail page
 }
 
+// Prefix site-absolute paths ("/posts/...") with the deploy base (e.g. "/chatsapiensblog/" on GitHub Pages).
+export function withBase(src?: string): string | undefined {
+  if (!src || !src.startsWith("/") || src.startsWith("//")) return src;
+  return import.meta.env.BASE_URL.replace(/\/$/, "") + src;
+}
+
 const files = import.meta.glob("../posts/*.md", {
   query: "?raw",
   import: "default",
@@ -65,7 +71,7 @@ const markdownPosts: Post[] = Object.entries(files).map(([path, raw]) => {
     excerpt: meta.excerpt || "",
     category: meta.category || "Tech",
     date: meta.date || "",
-    cover: meta.cover || undefined,
+    cover: withBase(meta.cover || undefined),
     tags: parseTags(meta.tags),
     body,
   };
